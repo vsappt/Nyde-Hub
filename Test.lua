@@ -48,16 +48,8 @@ local AutoM1 = HomeTab:CreateToggle({
    CurrentValue = false,
    Flag = "AutoFarmToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving
    Callback = function(Value)
-      while true do
-         if Value then
-            local args = {
-                vector.create(0.8840076923370361, -0, 0.4674724340438843),
-                1
-            }
-            game:GetService("Players").LocalPlayer:WaitForChild("Backpack"):WaitForChild("T-Rex-T-Rex"):WaitForChild("LeftClickRemote"):FireServer(unpack(args))
-         end
-         task.wait(0.1)
-      end
+    print("Auto Farm M1 is now: ", Value)
+     -- The value is a boolean, true or false
    end,
 })
 
