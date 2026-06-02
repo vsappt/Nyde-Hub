@@ -38,20 +38,6 @@ local tpwalking = false
 local speaker = game:GetService("Players").LocalPlayer
 local autoM1Enabled = false
 
--- FIXED: Replaced FindFirstChild to prevent script freezing if fruit isn't found
-local function getEquippedFruit()
-    local backpack = speaker:FindFirstChild("Backpack")
-    local character = speaker.Character
-    local fruits = {"Trex-Trex", "Kitsune-Kitsune", "Dragon-Dragon", "Pain-Pain"}
-    
-    for _, fruitName do
-        if (backpack and backpack:FindFirstChild(fruitName)) or (character and character:FindFirstChild(fruitName)) then
-            return fruitName
-        end
-    end
-    return nil
-end
-
 local MainTab = Window:CreateTab("Home", 4483362458)
 local MainSection = MainTab:CreateSection("Main")
 
@@ -299,3 +285,5 @@ game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(char)
     if hum then hum.PlatformStand = false end
     if char:FindFirstChild("Animate") then char.Animate.Disabled = false end
 end)
+
+
