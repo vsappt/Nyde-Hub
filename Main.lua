@@ -36,16 +36,20 @@ local nowe = false
 local speeds = 1
 local tpwalking = false
 local speaker = game:GetService("Players").LocalPlayer
+local autoM1Enabled = false
 
-local fruitm1 = nil
-if speaker.Backpack:WaitForChild("Trex-Trex") then
-    fruitm1 = "Trex-Trex"
-elseif speaker.Backpack:WaitForChild("Kitsune-Kitsune") then
-    fruitm1 = "Kitsune-Kitsune"
-elseif speaker.Backpack:WaitForChild("Dragon-Dragon") then
-    fruitm1 = "Dragon-Dragon"
-elseif speaker.Backpack:WaitForChild("Pain-Pain") then
-    fruitm1 = "Pain-Pain"
+-- FIXED: Replaced FindFirstChild to prevent script freezing if fruit isn't found
+local function getEquippedFruit()
+    local backpack = speaker:FindFirstChild("Backpack")
+    local character = speaker.Character
+    local fruits = {"Trex-Trex", "Kitsune-Kitsune", "Dragon-Dragon", "Pain-Pain"}
+    
+    for _, fruitName do
+        if (backpack and backpack:FindFirstChild(fruitName)) or (character and character:FindFirstChild(fruitName)) then
+            return fruitName
+        end
+    end
+    return nil
 end
 
 local MainTab = Window:CreateTab("Home", 4483362458)
@@ -63,8 +67,9 @@ MainTab:CreateButton({
     Callback = function()
         local InfiniteJumpEnabled = true
         game:GetService("UserInputService").JumpRequest:Connect(function()
-            if InfiniteJumpEnabled then
-                game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+            if InfiniteJumpEnabled and speaker.Character then
+                local hum = speaker.Character:FindFirstChildOfClass("Humanoid")
+                if hum then hum:ChangeState("Jumping") end
             end
         end)
     end,
@@ -81,16 +86,29 @@ MainTab:CreateDropdown({
     end,
 })
 
+-- FIXED: Turned this into a functional loop that fires continuously when toggled ON
 MainTab:CreateToggle({
     Name = "Auto Fruit M1",
     CurrentValue = false,
     Flag = "autofruitm1",
     Callback = function(Value)
-        local args = {
-	        vector.create(-0.0, -0, -1),
-	        3
-        }
-        game:GetService("Players").LocalPlayer.Character:WaitForChild(fruitm1):WaitForChild("LeftClickRemote"):FireServer(unpack(args))
+        autoM1Enabled = Value
+        if autoM1Enabled then
+            task.spawn(function()
+                while autoM1Enabled do
+                    local fruitm1 = getEquippedFruit()
+                    if fruitm1 and speaker.Character then
+                        -- Check tool inside character first (equipped) or automatically try to check backpack
+                        local tool = speaker.Character:FindFirstChild(fruitm1)
+                        if tool and tool:FindFirstChild("LeftClickRemote") then
+                            local args = {vector.create(-0.0, -0, -1), 3}
+                            tool.LeftClickRemote:FireServer(unpack(args))
+                        end
+                    end
+                    task.wait(0.1) -- Cooldown timing between clicks
+                end
+            end)
+        end
     end,
 })
 
@@ -160,14 +178,18 @@ FlyTab:CreateButton({
 FlyTab:CreateButton({
     Name = "Move UP",
     Callback = function()
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 2, 0)
+        if speaker.Character and speaker.Character:FindFirstChild("HumanoidRootPart") then
+            speaker.Character.HumanoidRootPart.CFrame = speaker.Character.HumanoidRootPart.CFrame * CFrame.new(0, 2, 0)
+        end
     end,
 })
 
 FlyTab:CreateButton({
     Name = "Move DOWN",
     Callback = function()
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -2, 0)
+        if speaker.Character and speaker.Character:FindFirstChild("HumanoidRootPart") then
+            speaker.Character.HumanoidRootPart.CFrame = speaker.Character.HumanoidRootPart.CFrame * CFrame.new(0, -2, 0)
+        end
     end,
 })
 
@@ -177,22 +199,13 @@ FlyTab:CreateButton({
         if nowe == true then
             nowe = false
             tpwalking = false
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, true)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying, true)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall, true)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed, true)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics, true)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, true)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running, true)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics, true)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics, true)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, true)
-            speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
+            if speaker.Character and speaker.Character:FindFirstChildOfClass("Humanoid") then
+                local hum = speaker.Character:FindFirstChildOfClass("Humanoid")
+                for _, state in Enum.HumanoidStateType:GetEnumItems() do
+                    pcall(function() hum:SetStateEnabled(state, true) end)
+                end
+                hum:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
+            end
             Rayfield:Notify({ Title = "Fly", Content = "Fly turned OFF", Duration = 2 })
         else
             nowe = true
@@ -210,86 +223,39 @@ FlyTab:CreateButton({
                 end)
             end
             
-            game.Players.LocalPlayer.Character.Animate.Disabled = true
-            local Char = game.Players.LocalPlayer.Character
-            local Hum = Char:FindFirstChildOfClass("Humanoid") or Char:FindFirstChildOfClass("AnimationController")
-            for i, v in next, Hum:GetPlayingAnimationTracks() do
-                v:AdjustSpeed(0)
+            if speaker.Character and speaker.Character:FindFirstChildOfClass("Humanoid") then
+                speaker.Character.Animate.Disabled = true
+                local Hum = speaker.Character:FindFirstChildOfClass("Humanoid")
+                for _, v in next, Hum:GetPlayingAnimationTracks() do
+                    v:AdjustSpeed(0)
+                end
+                
+                for _, state in Enum.HumanoidStateType:GetEnumItems() do
+                    pcall(function() Hum:SetStateEnabled(state, false) end)
+                end
+                Hum:ChangeState(Enum.HumanoidStateType.Swimming)
             end
-            
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, false)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying, false)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall, false)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed, false)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running, false)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics, false)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics, false)
-            speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
-            speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
             Rayfield:Notify({ Title = "Fly", Content = "Fly turned ON!", Duration = 2 })
 
-            if speaker.Character:FindFirstChildOfClass("Humanoid").RigType == Enum.HumanoidRigType.R6 then
+            task.spawn(function()
                 local plr = game.Players.LocalPlayer
-                local torso = plr.Character.Torso
-                local ctrl = {f=0, b=0, l=0, r=0}
-                local lastctrl = {f=0, b=0, l=0, r=0}
-                local maxspeed = 50
-                local speed = 0
-                local bg = Instance.new("BodyGyro", torso)
-                bg.P = 9e4
-                bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-                bg.cframe = torso.CFrame
-                local bv = Instance.new("BodyVelocity", torso)
-                bv.velocity = Vector3.new(0, 0.1, 0)
-                bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
-                plr.Character.Humanoid.PlatformStand = true
+                local rootPart = plr.Character and (plr.Character:FindFirstChild("Torso") or plr.Character:FindFirstChild("UpperTorso"))
+                if not rootPart then return end
                 
-                while nowe == true do
-                    game:GetService("RunService").RenderStepped:Wait()
-                    if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
-                        speed = speed + .5 + (speed / maxspeed)
-                        if speed > maxspeed then speed = maxspeed end
-                    elseif speed ~= 0 then
-                        speed = speed - 1
-                        if speed < 0 then speed = 0 end
-                    end
-                    local cam = game.Workspace.CurrentCamera.CoordinateFrame
-                    if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
-                        bv.velocity = ((cam.lookVector * (ctrl.f + ctrl.b)) + ((cam * CFrame.new(ctrl.l + ctrl.r, (ctrl.f + ctrl.b) * .2, 0).p) - cam.p)) * speed
-                        lastctrl = {f=ctrl.f, b=ctrl.b, l=ctrl.l, r=ctrl.r}
-                    elseif speed ~= 0 then
-                        bv.velocity = ((cam.lookVector * (lastctrl.f + lastctrl.b)) + ((cam * CFrame.new(lastctrl.l + lastctrl.r, (lastctrl.f + lastctrl.b) * .2, 0).p) - cam.p)) * speed
-                    else
-                        bv.velocity = Vector3.new(0, 0, 0)
-                    end
-                    bg.cframe = cam * CFrame.Angles(-math.rad((ctrl.f + ctrl.b) * 50 * speed / maxspeed), 0, 0)
-                end
-                bg:Destroy()
-                bv:Destroy()
-                plr.Character.Humanoid.PlatformStand = false
-                game.Players.LocalPlayer.Character.Animate.Disabled = false
-                tpwalking = false
-            else
-                local plr = game.Players.LocalPlayer
-                local UpperTorso = plr.Character.UpperTorso
                 local ctrl = {f=0, b=0, l=0, r=0}
                 local lastctrl = {f=0, b=0, l=0, r=0}
                 local maxspeed = 50
                 local speed = 0
-                local bg = Instance.new("BodyGyro", UpperTorso)
+                
+                local bg = Instance.new("BodyGyro", rootPart)
                 bg.P = 9e4
                 bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-                bg.cframe = UpperTorso.CFrame
-                local bv = Instance.new("BodyVelocity", UpperTorso)
+                bg.cframe = rootPart.CFrame
+                
+                local bv = Instance.new("BodyVelocity", rootPart)
                 bv.velocity = Vector3.new(0, 0.1, 0)
                 bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+                
                 plr.Character.Humanoid.PlatformStand = true
                 
                 while nowe == true do
@@ -314,10 +280,12 @@ FlyTab:CreateButton({
                 end
                 bg:Destroy()
                 bv:Destroy()
-                plr.Character.Humanoid.PlatformStand = false
-                game.Players.LocalPlayer.Character.Animate.Disabled = false
+                if plr.Character and plr.Character:FindFirstChildOfClass("Humanoid") then
+                    plr.Character.Humanoid.PlatformStand = false
+                    plr.Character.Animate.Disabled = false
+                end
                 tpwalking = false
-            end
+            end)
         end
     end,
 })
@@ -326,7 +294,8 @@ game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(char)
     task.wait(0.7)
     nowe = false
     tpwalking = false
-    char:FindFirstChildOfClass("Humanoid").PlatformStand = false
-    char.Animate.Disabled = false
+    autoM1Enabled = false
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.PlatformStand = false end
+    if char:FindFirstChild("Animate") then char.Animate.Disabled = false end
 end)
-
