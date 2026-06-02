@@ -54,7 +54,7 @@ Auto:CreateToggle({
                 vector.create(0.8840076923370361, -0, 0.4674724340438843),
                 1
             }
-            game:GetService("Players").LocalPlayer:WaitForChild("Backpack"):WaitForChild("Kitsune-Kitsune"):WaitForChild("LeftClickRemote"):FireServer(unpack(args))
+            game:GetService("Players").LocalPlayer:WaitForChild("Backpack"):WaitForChild("T-Rex-T-Rex"):WaitForChild("LeftClickRemote"):FireServer(unpack(args))
          end
          task.wait(0.1)
       end
