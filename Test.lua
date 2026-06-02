@@ -43,7 +43,7 @@ local HomeTab = Window:CreateTab("Home", 4483362458) -- Title, Image
 
 local Auto = HomeTab:CreateSection("Auto")
 
-Auto:CreateToggle({
+local AutoM1 = HomeTab:CreateToggle({
    Name = "Auto Fruit M1",
    CurrentValue = false,
    Flag = "AutoFarmToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving
