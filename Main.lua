@@ -72,28 +72,18 @@ MainTab:CreateDropdown({
     end,
 })
 
--- FIXED: Turned this into a functional loop that fires continuously when toggled ON
 MainTab:CreateToggle({
     Name = "Auto Fruit M1",
     CurrentValue = false,
     Flag = "autofruitm1",
     Callback = function(Value)
-        autoM1Enabled = Value
-        if autoM1Enabled then
-            task.spawn(function()
-                while autoM1Enabled do
-                    local fruitm1 = "T-Rex-T-Rex"
-                    if fruitm1 and speaker.Character then
-                        -- Check tool inside character first (equipped) or automatically try to check backpack
-                        local tool = speaker.Character:FindFirstChild(fruitm1)
-                        if tool and tool:FindFirstChild("LeftClickRemote") then
-                            local args = {vector.create(-0.0, -0, -1), 3}
-                            tool.LeftClickRemote:FireServer(unpack(args))
-                        end
-                    end
-                    task.wait(0.1) -- Cooldown timing between clicks
-                end
-            end)
+        while Value do
+            local args = {
+                vector.create(-0.0, -0, -1),
+                3
+            }
+            game:GetService("Players").LocalPlayer.Character:WaitForChild(fruitm1):WaitForChild("LeftClickRemote"):FireServer(unpack(args))
+            task.wait(0.1)
         end
     end,
 })
