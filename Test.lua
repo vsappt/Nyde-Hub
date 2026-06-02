@@ -60,3 +60,5 @@ Auto:CreateToggle({
       end
    end,
 })
+
+Rayfield:LoadConfiguration()
