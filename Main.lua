@@ -82,7 +82,7 @@ MainTab:CreateToggle({
                 vector.create(-0.0, -0, -1),
                 3
             }
-            game:GetService("Players").LocalPlayer.Character:WaitForChild(fruitm1):WaitForChild("LeftClickRemote"):FireServer(unpack(args))
+            game:GetService("Players").LocalPlayer.Character:WaitForChild("T-Rex-T-Rex"):WaitForChild("LeftClickRemote"):FireServer(unpack(args))
             task.wait(0.1)
         end
     end,
