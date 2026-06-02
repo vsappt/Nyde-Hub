@@ -82,7 +82,7 @@ MainTab:CreateToggle({
         if autoM1Enabled then
             task.spawn(function()
                 while autoM1Enabled do
-                    local fruitm1 = getEquippedFruit()
+                    local fruitm1 = "T-Rex-T-Rex"
                     if fruitm1 and speaker.Character then
                         -- Check tool inside character first (equipped) or automatically try to check backpack
                         local tool = speaker.Character:FindFirstChild(fruitm1)
