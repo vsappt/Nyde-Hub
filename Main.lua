@@ -37,6 +37,17 @@ local speeds = 1
 local tpwalking = false
 local speaker = game:GetService("Players").LocalPlayer
 
+local fruitm1 = nil
+if speaker.Backpack:WaitForChild("Trex-Trex") then
+    fruitm1 = "Trex-Trex"
+elseif speaker.Backpack:WaitForChild("Kitsune-Kitsune") then
+    fruitm1 = "Kitsune-Kitsune"
+elseif speaker.Backpack:WaitForChild("Dragon-Dragon") then
+    fruitm1 = "Dragon-Dragon"
+elseif speaker.Backpack:WaitForChild("Pain-Pain") then
+    fruitm1 = "Pain-Pain"
+end
+
 local MainTab = Window:CreateTab("Home", 4483362458)
 local MainSection = MainTab:CreateSection("Main")
 
@@ -68,6 +79,19 @@ MainTab:CreateDropdown({
     Callback = function(Options)
         print(Options)
     end,
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Fruit M1",
+    CurrentValue = false,
+    Flag = "autofruitm1",
+    Callback = function(Value)
+        local args = {
+	        vector.create(-0.11763512343168259, -0, -0.9930568933486938),
+	        3
+        }
+        game:GetService("Players").LocalPlayer.Character:WaitForChild(fruitm1):WaitForChild("LeftClickRemote"):FireServer(unpack(args))
+        end,
 })
 
 local FlyTab = Window:CreateTab(" Fly", 4483362458)
@@ -305,3 +329,4 @@ game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(char)
     char:FindFirstChildOfClass("Humanoid").PlatformStand = false
     char.Animate.Disabled = false
 end)
+
