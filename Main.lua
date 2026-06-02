@@ -87,11 +87,11 @@ MainTab:CreateToggle({
     Flag = "autofruitm1",
     Callback = function(Value)
         local args = {
-	        vector.create(-0.11763512343168259, -0, -0.9930568933486938),
+	        vector.create(-0.0, -0, -1),
 	        3
         }
         game:GetService("Players").LocalPlayer.Character:WaitForChild(fruitm1):WaitForChild("LeftClickRemote"):FireServer(unpack(args))
-        end,
+    end,
 })
 
 local FlyTab = Window:CreateTab(" Fly", 4483362458)
